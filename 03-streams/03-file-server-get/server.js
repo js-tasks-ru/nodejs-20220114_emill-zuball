@@ -1,6 +1,6 @@
-const url = require('url');
 const http = require('http');
 const path = require('path');
+const fs = require('fs');
 
 const server = new http.Server();
 
@@ -12,7 +12,21 @@ server.on('request', (req, res) => {
 
   switch (req.method) {
     case 'GET':
+      if (pathname.includes('/')) {
+        res.statusCode = 400;
+        res.end('Nested directories are not supported');
+      }
 
+      fs.readFile(filepath, (err, data) => {
+        if (err) {
+          res.statusCode = 404;
+          res.end('The file is not found');
+          return;
+        }
+
+        res.statusCode = 200;
+        res.end(data);
+      });
       break;
 
     default:
