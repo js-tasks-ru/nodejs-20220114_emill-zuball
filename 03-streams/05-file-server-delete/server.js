@@ -18,36 +18,17 @@ server.on('request', (req, res) => {
 
   switch (req.method) {
     case 'DELETE':
-
-      const readStream = fs.createReadStream(filepath);
-
-      readStream.on('error', (error) => {
-        if (error.code === 'ENOENT') {
+      fs.unlink(filepath, (error) => {
+        if (error && error.code === 'ENOENT') {
           res.statusCode = 404;
           res.end('File is not found');
-        } else {
+        } else if (error) {
           res.statusCode = 500;
           res.end('Server error');
-        }
-      });
-
-      readStream.on('data', () => {});
-
-      readStream.on('end', () => {
-        fs.unlink(filepath, (error) => {
-          if (error) {
-            res.statusCode = 500;
-            res.end();
-            return;
-          }
-
+        } else {
           res.statusCode = 200;
           res.end('File deleted successfully');
-        });
-      });
-
-      req.on('abort', () => {
-        readStream.destroy();
+        }
       });
 
       break;
